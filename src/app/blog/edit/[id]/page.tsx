@@ -19,12 +19,21 @@ const editBlog = async (
   return res.json();
 };
 
-const getBlogById = async (id: number) => {
-  const res = await fetch(`http://localhost:3000/api/blog/${id}`);
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.post;
+const deleteBlog = async (id: number) => {
+  const res = await fetch(`http://localhost:3000/api/blog/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return res.json();
 };
+
+// const getBlogById = async (id: number) => {
+//   const res = await fetch(`http://localhost:3000/api/blog/${id}`);
+//   const data = await res.json();
+//   return data.post;
+// };
 
 const EditPost = ({ params }: { params: { id: number } }) => {
   const router = useRouter();
@@ -34,7 +43,6 @@ const EditPost = ({ params }: { params: { id: number } }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     console.log("投稿ボタンを押したよ");
     e.preventDefault();
-
     toast.loading("編集中です・・・");
     await editBlog(
       titleRef.current?.value,
@@ -42,26 +50,33 @@ const EditPost = ({ params }: { params: { id: number } }) => {
       params.id
     );
     toast.success("編集に成功しました。");
-
     router.push("/");
-    // 新しく追加した時に表示されないことがある
     router.refresh();
   };
 
-  useEffect(() => {
-    getBlogById(params.id)
-      .then((data) => {
-        //console.log(data);
-        if (titleRef.current && descriptionRef.current) {
-          titleRef.current.value = data.title;
-          descriptionRef.current.value = data.description;
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        toast.error("エラーが発生しました。");
-      });
-  }, []);
+  const handleDelete = async (e: React.FormEvent) => {
+    console.log("削除ボタンを押したよ");
+    e.preventDefault();
+    toast.loading("削除中です・・・");
+    await deleteBlog(params.id);
+    toast.success("削除に成功しました。");
+    router.push("/");
+    router.refresh();
+  };
+
+  // useEffect(() => {
+  //   getBlogById(params.id)
+  //     .then((data) => {
+  //       //console.log(data);
+  //       if (titleRef.current && descriptionRef.current) {
+  //         titleRef.current.value = data.title;
+  //         descriptionRef.current.value = data.description;
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       toast.error("エラーが発生しました。", { id: "1" });
+  //     });
+  // }, []);
 
   return (
     <>
@@ -83,10 +98,17 @@ const EditPost = ({ params }: { params: { id: number } }) => {
               placeholder="記事詳細を入力"
               className="rounded-md px-4 py-2 w-full my-2"
             ></textarea>
-            <button className="font-semibold px-4 py-2 shadow-xl bg-slate-200 rounded-lg m-auto hover:bg-slate-100">
+            <button
+              type="submit"
+              className="font-semibold px-4 py-2 shadow-xl bg-slate-200 rounded-lg m-auto hover:bg-slate-100"
+            >
               更新
             </button>
-            <button className="ml-2 font-semibold px-4 py-2 shadow-xl bg-red-400 rounded-lg m-auto hover:bg-slate-100">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="ml-2 font-semibold px-4 py-2 shadow-xl bg-red-400 rounded-lg m-auto hover:bg-slate-100"
+            >
               削除
             </button>
           </form>
